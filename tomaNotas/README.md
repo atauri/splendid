@@ -2,31 +2,41 @@
 
 Aplicación completa para grabar, transcribir y resumir audio usando inteligencia artificial.
 
+## Versiones
+
+### Raspberry pi zero w
+
+Es una version portable para llevar al colmenar y realizar las inspecciones. Graba el audio y si hay conexion a internet (a través del móvil) envía los audios al servidor
+
+   **Tareas Pendientes:**
+   
+   *  Hacer en el servidor la transcripción del audio, generación de la ficha e inserción de la Base de datos
+
+   * Terminar y Enviar cuando se desconecta el micrófono y apagar la raspi despues de enviar.
+   * Añadir el zumabador (listo, enviar, apagar...) 
+
+### Windows
+
+   Verisón que transcribe y genera las fichas en PC
+
 ## 🎯 Funcionalidades
 
 - **Grabación de Audio por VAD (Voice Activity Detection)**: Graba automáticamente cuando detecta sonido
 - **Transcripción con OpenAI Whisper**: Convierte audio a texto de alta calidad
 - **Resumen con ChatGPT**: Analiza y resume las transcripciones
-- **Soporte Multi-plataforma**: Windows y Raspberry Pi Zero 2W
 
-## 📋 Requisitos
-
-### Sistema
-- **Windows 10+** o **Raspberry Pi Zero 2W**
-- Python 3.8+
-- Micrófono conectado
 
 ### Dependencias Python
+
 ```bash
 pip install pyaudio numpy openai
 ```
 
 ### Configuración de API Keys
+
 Debes establecer variables de entorno para las APIs:
-```bash
-# OpenAI API Key (para transcripción y resumen)
-export OPENAI_API_KEY="tu-clave-aqui"
-```
+
+   * OPEN_AI
 
 ## 🚀 Instalación
 
@@ -162,24 +172,6 @@ python trancribir.py -f nota.wav
 # 3. Resumir y analizar
 python resumir.py -p "Haz una ficha técnica de esta nota" -w nota.wav
 ```
-
-## 🔑 Variables de Entorno
-
-```bash
-# OpenAI API Key (obligatorio para transcripción y resumen)
-OPENAI_API_KEY=YOUR_OPENAI_API_KEY
-```
-
-**Cómo configurar en Windows (PowerShell):**
-```powershell
-$env:OPENAI_API_KEY="tu-clave-aqui"
-```
-
-**Cómo configurar en Raspberry Pi (Linux/Bash):**
-```bash
-export OPENAI_API_KEY="tu-clave-aqui"
-```
-
 ## 📚 Archivos Generados
 
 - `Audio<YYYY-MM-DD_HH-MM-SS>.wav` → Archivo de audio grabado
@@ -198,9 +190,7 @@ export OPENAI_API_KEY="tu-clave-aqui"
 - Verifica la variable de entorno `OPENAI_API_KEY`
 
 ### Audio con bajo volumen
-- Aumenta el umbral con `-u`
-- Acércate más al micrófono
-- Revisa los niveles de entrada del sistema
+- Aumenta el umbral con `-u`. En raspberry usa el comando *alsamixer*
 
 ### Error en Raspberry Pi: "No module named 'pyaudio'"
 ```bash
@@ -215,7 +205,3 @@ Este proyecto es privado y de uso personal.
 ## 👤 Autor
 
 David Ataurí
-
-## 📞 Contacto
-
-Para reportar problemas o sugerencias, contacta al desarrollador.
