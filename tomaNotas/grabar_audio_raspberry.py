@@ -28,6 +28,7 @@ Instrucciones para Raspberry Pi Zero 2W:
 eviar script a rpi: scp grabar_audio_raspberry.py tadu@192.168.1.207:/home/tadu/splendid
 """
 
+import os
 import wave
 import sys
 import argparse
@@ -36,6 +37,7 @@ import time
 import collections
 from datetime import datetime
 import threading
+import funciones
 
 try:
     import pyaudio
@@ -137,6 +139,10 @@ def grabar_activado_por_voz(
         print("\n[!] Interrupción detectada. Deteniendo grabación...")
         nonlocal corriendo
         corriendo = False
+
+        # ejecutar enviar.py script de python 
+        time.sleep(1) # esperar a que se guarde el archivo
+        os.system("python3 enviar.py")     
 
     signal.signal(signal.SIGINT, signal_handler)
 
