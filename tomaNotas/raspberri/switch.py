@@ -53,10 +53,11 @@ try:
             if current_state != last_state:
                 button_callback(BUTTON_PIN)
                 last_state = current_state
-            time.sleep(0.05)
+            time.sleep(1)
     else:
         while True:
-            time.sleep(1)
+            print(".")
+            time.sleep(10)
 except KeyboardInterrupt:
     print("Programa terminado por el usuario")
 finally:
