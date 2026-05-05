@@ -45,7 +45,8 @@ def enviar_a_servidor_remoto(
     nombre_archivo: str,
     servidor: str = "titi.etsii.urjc.es",
     usuario: str = "tadu",
-    destino: str = "/home/tadu/proyectos/splendid/revisiones/Zarzalejo/",
+    #destino: str = "/home/tadu/proyectos/splendid/revisiones/Zarzalejo/",
+    destino: str = "/var/www/html/splendid/revisiones/Zarzalejo/",
     puerto: int = 222
 ) -> bool:
     """
@@ -61,7 +62,7 @@ def enviar_a_servidor_remoto(
     # Ejemplo de uso: scp -P 222 "2026-05-03 11_23_14.wav" tadu@titi.etsii.urjc.es:/home/tadu/proyectos/splendid/revisiones/Zarzalejo/
 
     comando = f"scp -P {puerto} \"{nombre_archivo}\" {usuario}@{servidor}:\"{destino}\""
-    print(f"Enviando '{nombre_archivo}' a '{servidor}:{destino}'...")
+    print(comando)
     try:
         subprocess.run(comando, shell=True, check=True)
         print(f"Archivo '{nombre_archivo}' enviado a '{servidor}:{destino}'")

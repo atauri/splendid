@@ -39,10 +39,18 @@ from datetime import datetime
 import threading
 import funciones
 
+# guarda el pid para swich pueda enviar señal de interrupción para detener la grabación
+def guardarPid():
+    pid = os.getpid()
+    print(f"PID del proceso: {pid}")
+    with open("proceso.pid", "w") as f:
+        f.write(str(pid))
+
 try:
     import pyaudio
     import numpy as np
 except ImportError:
+
     print("ERROR: Faltan dependencias.")
     print("En Raspberry Pi, instálalas ejecutando:")
     print("sudo apt install python3-pyaudio portaudio19-dev python3-numpy")
@@ -56,8 +64,8 @@ FORMATO        = pyaudio.paInt16
 CANALES        = 1
 TASA_MUESTREO  = 44100
 CHUNK          = 1024*2
-UMBRAL_DEFAULT = 1000   # Ajustar según el ruido de fondo en Raspberry Pi
-SILENCIO_LIMIT = 10     # Segundos de silencio para detener la grabación
+UMBRAL_DEFAULT = 100   # Ajustar según el ruido de fondo en Raspberry Pi
+SILENCIO_LIMIT = 10     # Segundos de silencio para Guardar en disco
 PRE_BUFFER_SEC = 0.5   # Segundos de audio previo a guardar
 MAX_EN_SILENCIO = 2 #  segundos para suspender la grabación y guardar
 # ---------------------------------------------------------------------------
@@ -79,7 +87,6 @@ def guardar(frames: list, nombre_archivo: str, audio: pyaudio.PyAudio) -> None:
     global semaforo_guardar
 
     semaforo_guardar.acquire()  
-    
     with wave.open(nombre_archivo, "wb") as wf:
         wf.setnchannels(CANALES)
         wf.setsampwidth(audio.get_sample_size(FORMATO))
@@ -99,9 +106,16 @@ def grabar_activado_por_voz(
     global semaforo_guardar
     guardado = False
 
-    # string con la fecha y hora actual para nombrar el archivo de salida
-    fichero_salida = f"{datetime.now().strftime('%Y-%m-%d %H_%M_%S')}.wav"
+    # contar numero ficheros wav en el directorio
+    num_wav = len([f for f in os.listdir() if f.endswith(".wav")])
+    fichero_salida = f"grabacion_{num_wav + 1}.wav"
 
+    # Si pilla fecha y hora sobreescribe el nombre.
+    # string con la fecha y hora actual para nombrar el archivo de salida
+    try: fichero_salida = f"{datetime.now().strftime('%Y-%m-%d %H_%M_%S')}.wav"
+    except: pass
+    
+    # Guardar el PID para que el switch pueda enviar señal de interrupción
     audio = pyaudio.PyAudio()
     
     # En Raspberry Pi, el dispositivo por defecto puede variar
@@ -122,7 +136,7 @@ def grabar_activado_por_voz(
         return
 
     print(f"Escuchando... (Umbral actual: {umbral})")
-    print("Presiona Ctrl+C para detener y salir.")
+    #print("Presiona Ctrl+C para detener y salir.")
 
     grabando = False
     frames_grabados = []
@@ -131,79 +145,85 @@ def grabar_activado_por_voz(
     max_pre_frames = int(TASA_MUESTREO / CHUNK * PRE_BUFFER_SEC)
     pre_buffer = collections.deque(maxlen=max_pre_frames)
     
+    estado="--"
+    tiempoEnSilencio = 0
     silencio_inicio = None
     corriendo = True
+        
 
     # Manejo de interrupción en Windows (Ctrl+C)
     def signal_handler(sig, frame):
+        os.system("clear")
         print("\n[!] Interrupción detectada. Deteniendo grabación...")
         nonlocal corriendo
-        corriendo = False
-
-        # ejecutar enviar.py script de python 
-        time.sleep(1) # esperar a que se guarde el archivo
-        os.system("python3 enviar.py")     
-
+        corriendo = False # salir del bucle principal para cerrar el stream y guardar el archivo
+        time.sleep(1)  # Dar tiempo a que el proceso termine
+        
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
+        
         while corriendo:
 
             try:
                 data = stream.read(CHUNK, exception_on_overflow=False)
                 audio_data = np.frombuffer(data, dtype=np.int16)
                 amplitud_max = np.abs(audio_data).max()
-
+                media = int(np.abs(audio_data).mean())
+                
+                # mostrar información de nivel de audio y estado actual
+                if media > umbral:
+                    estado = "G"
+                    silencio_inicio = time.time() # resetear tiempo de silencio al detectar sonido
+                else:
+                    estado = "S"
+                    try:
+                        tiempoEnSilencio = time.time() - silencio_inicio
+                    except TypeError:
+                        tiempoEnSilencio = 0
+                    
+                    if  tiempoEnSilencio > MAX_EN_SILENCIO: 
+                        estado = "P" # Pausado por silencio prolongado
+                
+                print(f"Media: {media:5d}, Max: {amplitud_max:5d}, umbral: {umbral}, tiempo en Silencio: {tiempoEnSilencio:.1f}s, Estado: {estado}", end="\r")
+                
                 if not grabando:
+                    #Reanuda la grabacion 
                     pre_buffer.append(data)
-                    if amplitud_max > umbral:
-                        print(f"\n[!] ¡Sonido detectado! (Nivel: {amplitud_max}). Grabando...")
+                    if estado =="G":
                         grabando = True
                         guardado = False
                         frames_grabados += list(pre_buffer)
                         silencio_inicio = None
                 else:
-                    # Seccion crítica: mientras grabo a disco
+                    # Seccion crítica: AÑADIR LOS CHUNCKS GRABADOS A LA LISTA DE FRAMES
                     #----------------------------------------
                     semaforo_guardar.acquire()
                     frames_grabados.append(data)
                     semaforo_guardar.release()
                     #--------------------------------------
-                    if amplitud_max > umbral:
-                        silencio_inicio = None # Resetear tiempo de silencio
-                    else:
-                        # estoy en silencio
-                      
-                        try:
-                            tiempoEnSilencio = time.time() - silencio_inicio
-                        except TypeError:
-                            tiempoEnSilencio = 0
 
-                        print(f" > Silencio... Tiempo en silencio: {tiempoEnSilencio:.1f}s", end="\r")    
-                        
-                        if silencio_inicio is None:
-                            silencio_inicio = time.time()
-                     
-                        if tiempoEnSilencio > MAX_EN_SILENCIO:
-                            
-                            print(f"\n[*] Silencio prolongado no incluir")
-                            grabando = False
+                    if tiempoEnSilencio > SILENCIO_LIMIT:
+        
+                        #print(f"\n[*] Silencio prolongado no incluir")
+                        print("Silencio largo, guardar")
+                        grabando = False
 
-                            if not guardado:
-                                hilo_guardar = threading.Thread(
-                                    target=guardar,
-                                    args=(frames_grabados, fichero_salida, audio),
-                                    daemon=True
-                                )
-                                hilo_guardar.start()
-                                # hasta que no grabe mas frames no dejo guardar otra vez
-                                guardado = True
+                        if not guardado:
+                            hilo_guardar = threading.Thread(
+                                target=guardar,
+                                args=(frames_grabados, fichero_salida, audio),
+                                daemon=True
+                            )
+                            hilo_guardar.start()
+                            # hasta que no grabe mas frames no dejo guardar otra vez
+                            guardado = True
                             
-                    print(f" > Grabando... Nivel actual: {amplitud_max:5d}", end="\r")
+                    #print(f" > Grabando... Nivel actual: {amplitud_max:5d}", end="\r")
             except IOError:
                 # Evitar que errores menores de buffer detengan el script
                 continue
-        print("\nDeteniendo grabación...")
+        print("\nFIN")
 
     finally:
         stream.stop_stream()
@@ -212,19 +232,6 @@ def grabar_activado_por_voz(
 
     if frames_grabados: guardar(frames_grabados, fichero_salida, audio)
         
-    '''
-        # Asegurar que el nombre termine en .wav
-        if not fichero_salida.lower().endswith(".wav"):
-            fichero_salida += ".wav"
-            
-        with wave.open(fichero_salida, "wb") as wf:
-            wf.setnchannels(CANALES)
-            wf.setsampwidth(audio.get_sample_size(FORMATO))
-            wf.setframerate(TASA_MUESTREO)
-            wf.writeframes(b"".join(frames_grabados))
-        print(f"\nArchivo guardado exitosamente: {fichero_salida}")
-    else:
-        print("\nNo se detectó suficiente sonido para generar una grabación.")'''
 
 def main():
     parser = argparse.ArgumentParser(description="Grabación por umbral para Raspberry Pi Zero 2W.")
@@ -238,9 +245,10 @@ def main():
         listar_dispositivos(pyaudio.PyAudio())
         return
 
+    guardarPid()
+
     # Generar nombre por defecto con fecha y hora
-    fichero = args.salida or f"TEST{datetime.now().strftime('%H%M%S')}.wav"
-    
+    fichero = args.salida or f"{datetime.now().strftime('%H%M%S')}.wav"
     grabar_activado_por_voz(args.umbral, fichero, args.dispositivo)
 
 if __name__ == "__main__":

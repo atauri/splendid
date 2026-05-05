@@ -5,7 +5,6 @@ from pathlib import Path
 def obtener_archivos_wav():
     """
     Lee todos los ficheros con extensión .wav del directorio actual.
-    
     Retorna:
         list: Lista de rutas de archivos .wav encontrados
     """
