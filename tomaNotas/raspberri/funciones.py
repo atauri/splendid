@@ -1,6 +1,26 @@
 import urllib.request
 import urllib.error
 import subprocess
+import time
+
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+# import GIPO para controlar el zumbador
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+# configurar pin 4 como salida para el zumbador
+GPIO.setup(4, GPIO.OUT) 
+#Button(4, pull_up=True)  # pin para el zumbador       
+
+
+def beep(beeps=1, durationH=0.1, durationL=0.1):
+    print(f"Beep: {beeps} veces, duración alta: {durationH}s, duración baja: {durationL}s") 
+    for _ in range(beeps):
+        GPIO.output(4, GPIO.HIGH)
+        time.sleep(durationH)
+        GPIO.output(4, GPIO.LOW)
+        time.sleep(durationL)
+
 
 def esta_conectado_a_internet() -> bool:
     """

@@ -27,6 +27,8 @@ Instrucciones para Raspberry Pi Zero 2W:
 
 eviar script a rpi: scp grabar_audio_raspberry.py tadu@192.168.1.207:/home/tadu/splendid
 """
+
+
 from colorama import  Fore
 import os
 import wave
@@ -43,7 +45,7 @@ import funciones
 def guardarPid():
     pid = os.getpid()
     print(f"PID del proceso: {pid}")
-    with open("proceso.pid", "w") as f:
+    with open("/home/tadu/splendid/proceso.pid", "w") as f:
         f.write(str(pid))
 
 try:
@@ -64,7 +66,7 @@ FORMATO        = pyaudio.paInt16
 CANALES        = 1
 TASA_MUESTREO  = 44100
 CHUNK          = 1024*2
-UMBRAL_DEFAULT = 100   # Ajustar según el ruido de fondo en Raspberry Pi
+UMBRAL_DEFAULT = 200   # Ajustar según el ruido de fondo en Raspberry Pi
 SILENCIO_LIMIT = 10     # Segundos de silencio para Guardar en disco
 PRE_BUFFER_SEC = 0.5   # Segundos de audio previo a guardar
 MAX_EN_SILENCIO = 2 #  segundos para suspender la grabación y guardar
@@ -83,7 +85,7 @@ def listar_dispositivos(audio: pyaudio.PyAudio) -> None:
 
 # Función para guardar SOLO los nuevos chunks en un archivo WAV
 def guardar(frames: list, archivo_wav, tiempo_inicio: float) -> None:
-
+    funciones.beep(1, 0.25)
     global semaforo_guardar
 
     semaforo_guardar.acquire()  
@@ -98,8 +100,6 @@ def guardar(frames: list, archivo_wav, tiempo_inicio: float) -> None:
     tiempo_transcurrido = tiempo_fin - tiempo_inicio
     os.system("clear")
     print(f"\n{len(frames)} Chunks guardados en memoria ({tiempo_transcurrido:.2f}s)") 
-
-    
 
 
 def grabar_activado_por_voz(
@@ -166,12 +166,11 @@ def grabar_activado_por_voz(
     # ESCUCHAR LA SEÑAL DE INTERRUPCIÓN PARA DETENER LA GRABACIÓN    
     signal.signal(signal.SIGINT, signal_handler)
                         
-
+    funciones.beep(1,.5)
     try:
         os.system("clear")
-        
-        color = Fore.BLACK
 
+        estado_anterior = None
         while corriendo:
 
             try:
@@ -182,8 +181,11 @@ def grabar_activado_por_voz(
                 media = int(np.abs(audio_data).mean())
                 
                 # mostrar información de nivel de audio y estado actual
+                estado_anterior = estado
                 if media > umbral:
+                    
                     estado = "G"
+                    guardado = False  # Reiniciar bandera de guardado al detectar sonido
                     silencio_inicio = time.time()  # resetear tiempo de silencio al detectar sonido
                     if archivo_wav is None:
                         # Abrir el archivo WAV al detectar sonido por primera vez
@@ -192,7 +194,9 @@ def grabar_activado_por_voz(
                         archivo_wav.setsampwidth(audio.get_sample_size(FORMATO))
                         archivo_wav.setframerate(TASA_MUESTREO)
                 else:
-                    estado = "S"
+                    if estado_anterior =='P': pass
+                    else : estado = "S"
+                    
                     try:
                         tiempoEnSilencio = time.time() - silencio_inicio
                     except TypeError:
@@ -221,9 +225,10 @@ def grabar_activado_por_voz(
                     pre_buffer.clear()  # Limpiar el pre-buffer después de agregar sus frames a la lista de guardado
                 else:
                     pass
-                print(f"Estado: {estado}, Media: {media:5d}, Max: {amplitud_max:5d}, umbral: {umbral}, silencio: {tiempoEnSilencio:.1f}", end="\r")
-                    
-               
+                
+                # mostrar valores si cambia el estado 
+                if estado != estado_anterior:
+                    print(f"Estado: {estado}, Media: {media:5d}, Max: {amplitud_max:5d}, umbral: {umbral}, silencio: {tiempoEnSilencio:.1f}", end="\r")
   
             except IOError:
                 # Evitar que errores menores de buffer detengan el script
