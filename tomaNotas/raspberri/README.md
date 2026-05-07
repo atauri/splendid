@@ -1,7 +1,7 @@
 # Tareas
 
-- [x] Implementar función de beep
-- [ ] ¿Cambiar el apagado?
+- [ ] Meter otro switch para apagado y enviar
+- [ ] Revisar paths y rutas en enviar.py
 
 # ¿Qué puede salir MAL?
 

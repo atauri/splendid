@@ -23,7 +23,7 @@ def matarProcesoGrabacion(p):
     print(f"Matar proceso (PID: {p})")
 
     print(f"Enviando señal de interrupción al proceso de grabación (PID: {p})...")
-    time.sleep(3)
+    #time.sleep(3)
     try: 
         os.kill(p , SIGINT)  # enviar señal de interrupción para detener la grabación
         return True
@@ -37,7 +37,7 @@ def on():
     global estado
     global pidHijo
 
-    funciones.beep(1,0.2)
+    funciones.beep(1, 0.5)
 
     # Crear un proceso hijo para ejecutar la grabación en segundo plano  
     
@@ -60,7 +60,7 @@ def off():
     global pidHijo
 
     print("OFF")
-    funciones.beep(2,0.1)
+    funciones.beep(2,0.05)
 
     print("Intentando matar el proceso hijo:", pidPadre, " -> pidHijo:", pidHijo)
     
@@ -71,6 +71,6 @@ button.when_pressed = on
 button.when_released = off
 
 # Ready
-funciones.beep(1,1)
+funciones.beep(1, 0.05)
 
 pause()

@@ -78,9 +78,9 @@ def listar_dispositivos(audio: pyaudio.PyAudio) -> None:
     print("----------------------------------------\n")
 
 # Función para guardar SOLO los nuevos chunks en un archivo WAV
-def guardar(frames: list, archivo_wav, tiempo_inicio: float) -> None:
+def guardar(frames: list, archivo_wav) -> None:
     
-    funciones.beep(1, 0.05)
+    #funciones.beep(1, 0.05)
     global semaforo_guardar
 
     semaforo_guardar.acquire()  
@@ -91,10 +91,8 @@ def guardar(frames: list, archivo_wav, tiempo_inicio: float) -> None:
     finally:
         semaforo_guardar.release()
 
-    tiempo_fin = time.time()
-    tiempo_transcurrido = tiempo_fin - tiempo_inicio
-    os.system("clear")
-    print(f"\n{len(frames)} Chunks guardados en memoria ({tiempo_transcurrido:.2f}s)") 
+    #os.system("clear")
+    print(f"\n{len(frames)} frames guardados ") 
 
 
 def grabar_activado_por_voz(
@@ -139,9 +137,7 @@ def grabar_activado_por_voz(
         return
 
     print(f"Escuchando... (Umbral actual: {umbral})")
-    
-    grabando = False
-    frames_guardados = 0  # Contador de frames ya guardados en disco
+
     archivo_wav = None  # Objeto del archivo WAV abierto
 
     frames_a_guardar = []  # Lista para almacenar los frames que se van a guardar en disco
@@ -201,10 +197,18 @@ def grabar_activado_por_voz(
                     except TypeError:
                         tiempoEnSilencio = 0
                     
-                    if  tiempoEnSilencio > MAX_EN_SILENCIO: 
+                    if  tiempoEnSilencio > MAX_EN_SILENCIO and  estado != 'P':
                         estado = "P" # Pausado por silencio prolongado
+                        if not guardado and len(frames_a_guardar)>0:
+                            hilo_guardar = threading.Thread(
+                                target=guardar,
+                                args=(frames_a_guardar, archivo_wav),
+                                daemon=True
+                            )
+                            hilo_guardar.start()
+                            guardado = True
                         
-                        if tiempoEnSilencio > SILENCIO_LIMIT:
+                        '''if tiempoEnSilencio > SILENCIO_LIMIT:
             
                             os.system("clear")
                             print("Silencio largo, guardar")
@@ -216,7 +220,7 @@ def grabar_activado_por_voz(
                                     daemon=True
                                 )
                                 hilo_guardar.start()
-                            guardado = True
+                            guardado = True'''
                 
                 if estado == 'S' or estado == 'G':
                     pre_buffer.append(data)
@@ -235,7 +239,7 @@ def grabar_activado_por_voz(
         print("\nFIN")
 
     finally:
-        guardar(frames_a_guardar, archivo_wav, time.time())  # Guardar cualquier frame restante antes de cerrar
+        guardar(frames_a_guardar, archivo_wav)  # Guardar cualquier frame restante antes de cerrar
         stream.stop_stream()
         stream.close()
         audio.terminate()
