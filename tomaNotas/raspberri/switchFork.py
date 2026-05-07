@@ -1,6 +1,7 @@
 from gpiozero import Button
 from signal import pause, SIGINT
 import os
+import time
 
 import funciones
 
@@ -16,30 +17,39 @@ print(f"PID del proceso principal: {pidPadre}")
 
 # recupera el pid del proceso de grabación para enviar señal de interrupción desde el switch
 
-def matarProcesoGrabacion():
+def matarProcesoGrabacion(p):
 
-    if pidHijo is not None:
-        print(f"Enviando señal de interrupción al proceso de grabación (PID: {pidHijo})...")
-        try: os.kill(pidHijo, SIGINT)  # enviar señal de interrupción para detener la grabación
-        except ProcessLookupError:
-            print("El proceso de grabación no se encontró.")
-    else:
-        print("No se encontró el PID del proceso de grabación.")
+    
+    print(f"Matar proceso (PID: {p})")
+
+    print(f"Enviando señal de interrupción al proceso de grabación (PID: {p})...")
+    time.sleep(3)
+    try: 
+        os.kill(p , SIGINT)  # enviar señal de interrupción para detener la grabación
+        return True
+    except ProcessLookupError:
+            print("error")
+    return False
+
 
 def on():
 
     global estado
+    global pidHijo
+
     funciones.beep(1,0.2)
 
     # Crear un proceso hijo para ejecutar la grabación en segundo plano  
     
-    os.fork()
+    pidHijo = os.fork()
 
     # el hijo carga con exec el script de grabación, el padre continúa con el programa principal
+    if os.getpid() != pidPadre:
 
-    if os.getpid() != pidPadre and estado != "Grabando": 
         print(f"PID del proceso hijo: {os.getpid()}")    # Solo el proceso hijo ejecutará la grabación
-        os.execv("/home/tadu/env/bin/python3", ["/home/tadu/env/bin/python3", "/home/tadu/splendid/grabar_audio_raspberryFork.py"])    
+        time.sleep(3)  # Esperar un poco antes de ejecutar el script de grabación
+        if estado != "Grabando": 
+            os.execv("/home/tadu/env/bin/python3", ["/home/tadu/env/bin/python3", "/home/tadu/splendid/grabar_audio_raspberryFork.py"])    
     else:
         # soy el padre
         estado = "Grabando"
@@ -47,10 +57,14 @@ def on():
 def off():
 
     global estado 
-    estado = None
+    global pidHijo
+
     print("OFF")
     funciones.beep(2,0.1)
-    matarProcesoGrabacion()
+
+    print("Intentando matar el proceso hijo:", pidPadre, " -> pidHijo:", pidHijo)
+    
+    if matarProcesoGrabacion(pidHijo): estado = None
     
 
 button.when_pressed = on
