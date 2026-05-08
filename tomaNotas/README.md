@@ -63,7 +63,7 @@ Debes establecer variables de entorno para las APIs:
    ```
 3. Instala dependencias de Python:
    ```bash
-   pip3 install pyaudio numpy openai
+   pip3 install pyaudio numpy 
    ```
 
 ## 📁 Estructura de Archivos

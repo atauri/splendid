@@ -6,8 +6,10 @@ import time
 import funciones
 
 
-
+# REC / STOP
 button = Button(17, pull_up=True, bounce_time=0.05)
+# Apagar / enviar
+button2 = Button(15, pull_up=True, bounce_time=0.05)
         
 pidPadre = os.getpid()
 pidHijo = None
@@ -16,10 +18,8 @@ estado = None
 print(f"PID del proceso principal: {pidPadre}") 
 
 # recupera el pid del proceso de grabación para enviar señal de interrupción desde el switch
-
 def matarProcesoGrabacion(p):
 
-    
     print(f"Matar proceso (PID: {p})")
 
     print(f"Enviando señal de interrupción al proceso de grabación (PID: {p})...")
@@ -65,10 +65,29 @@ def off():
     print("Intentando matar el proceso hijo:", pidPadre, " -> pidHijo:", pidHijo)
     
     if matarProcesoGrabacion(pidHijo): estado = None
+
+#-- switch de enviar / apagar -------------------------------------------------------------------------------------------------
     
+
+def apagar():
+
+    print("Apagar")
+    funciones.beep(1, 1)
+    os.system("sudo shutdown -h now")
+        
+def  enviar():
+
+    print("Enviar")
+    funciones.beep(2, 0.5)
+    os.system("/home/tadu/env/bin/python3 /home/tadu/splendid/enviar.py")
+
+   
 
 button.when_pressed = on
 button.when_released = off
+
+button2.when_pressed = apagar
+button2.when_released = enviar
 
 # Ready
 funciones.beep(1, 0.05)

@@ -1,4 +1,5 @@
-import funciones 
+from funciones import enviar_a_servidor_remoto, mover_a_procesados 
+
 import glob     
 from pathlib import Path
 
@@ -13,9 +14,9 @@ def obtener_archivos_wav():
     for i, audio in enumerate(audios):
         print(f"{i+1}. {audio} \n---------")
         
-        if funciones.enviar_a_servidor_remoto(audio):
+        if enviar_a_servidor_remoto(audio):
             print(f"Archivo '{audio}' enviado exitosamente.") 
-            funciones.mover_a_procesados(audio)  
+            mover_a_procesados(audio)  
         else:
             print(f"Error al enviar el archivo '{audio}'. No se moverá a 'procesados'.")       
     return audios
