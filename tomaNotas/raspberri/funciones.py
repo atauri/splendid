@@ -65,8 +65,7 @@ def enviar_a_servidor_remoto(
     nombre_archivo: str,
     servidor: str = "titi.etsii.urjc.es",
     usuario: str = "tadu",
-    #destino: str = "/home/tadu/proyectos/splendid/revisiones/Zarzalejo/",
-    destino: str = "/var/www/html/splendid/revisiones/Zarzalejo/",
+    destino: str = "/var/www/html/splendid/revisiones/wav/",
     puerto: int = 222
 ) -> bool:
     """

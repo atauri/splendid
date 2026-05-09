@@ -78,9 +78,9 @@ def apagar():
 def  enviar():
 
     print("Enviar")
-    funciones.beep(2, 0.5)
+    funciones.beep(2, 0.05)
     os.system("/home/tadu/env/bin/python3 /home/tadu/splendid/enviar.py")
-
+    funciones.beep(2, 0.05)
    
 
 button.when_pressed = on
