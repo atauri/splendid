@@ -1,0 +1,53 @@
+body {
+    font-family: "Lato", Arial, sans-serif;
+    background: #e1ebe4;
+    color: #3a3f3b;
+    max-width: 500px;
+    margin: auto;
+}
+
+header {
+    background: #e1ebe4;
+    color: #3a3f3b;
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+}
+
+h1 {
+    font-family: "Lato", Arial, sans-serif;
+    font-size: 4em;
+    margin-top: .5em;
+}
+
+small {
+    opacity: .7;
+    font-style: italic;
+    padding-bottom: 1em;
+}
+
+ul {
+    list-style: none;
+    padding: 0px;
+    margin-top: 2em;
+    margin-left: 0;
+}
+
+li {
+    margin: 0px;
+    padding: 10px 0px 0px 1.8em;
+    cursor: pointer;
+    position: relative;
+}
+
+li::before {
+    content: "\f130";
+    font-family: "Font Awesome 6 Free";
+    font-size: 1.1em;
+    font-weight: 900;
+    left: 8px;
+    position: absolute;
+}
+
+.card-body {
+    opacity: .8;
+}
