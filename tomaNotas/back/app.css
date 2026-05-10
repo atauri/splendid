@@ -1,14 +1,24 @@
 body {
     font-family: "Lato", Arial, sans-serif;
-    background: #e1ebe4;
-    color: #3a3f3b;
-    max-width: 500px;
-    margin: auto;
+    background-color: #e1ebe4;
+    color: #ff7c02;
+    min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(41, 41, 41, 0.9), rgba(82, 82, 82, 0.9)),
+        url("https://i.pinimg.com/736x/fe/07/12/fe07129b39708577cddc42182cdc984c.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    z-index: -1;
 }
 
 header {
-    background: #e1ebe4;
-    color: #3a3f3b;
     padding: 1.5rem 0;
     margin-bottom: 1.5rem;
 }
@@ -50,4 +60,5 @@ li::before {
 
 .card-body {
     opacity: .8;
+    mix-blend-mode: luminosity;
 }

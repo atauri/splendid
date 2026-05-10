@@ -121,7 +121,8 @@
                     <div
                         class="d-flex gap-2">
                         <button
-                            class="btn btn-primary">Generar
+                            class="btn btn-primary"
+                            @click="generarFicha">Generar
                             ficha</button>
                     </div>
                 </div>
@@ -192,6 +193,28 @@
                     }
                     catch (error) {
                         console.error('Error cargando audios:', error);
+                    }
+                },
+                generarFicha() {
+                    const url = 'http://tit.etsii.urjc.es:8081/api/revisiones/genera/';
+                    const vm = this;
+
+                    try {
+                        document.body.style.cursor = 'wait';
+
+                        axios.post(url, {txt: this.transcripcion})
+                            .then(function (data) {
+                                vm.ficha = data.data;
+                                document.body.style.cursor = 'default';
+                            })
+                            .catch(function (error) {
+                                console.error('Error generando ficha:', error);
+                                document.body.style.cursor = 'default';
+                            });
+                    }
+                    catch (error) {
+                        console.error('Error generando ficha:', error);
+                        document.body.style.cursor = 'default';
                     }
                 }
             },
