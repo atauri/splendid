@@ -1,6 +1,11 @@
 # Temperatura en la colmena
 ## Observaciones y notas
 
+### 12 de mayo 202 (D)
+
+![alt text](image-2.png)
+
+En D4 empieza a subir la temperatur. Un subida asi puede ser porque lo esn llenado de miel o porque empiece a poner huevos la reina. Pero como este calentón ocurre por la noche lo mas seguro es que se esté reanudando la puesta. Comprobar en unso días...
 
 ### 22 abril 2026 (A)
 
