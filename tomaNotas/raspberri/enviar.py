@@ -1,7 +1,10 @@
+import os
+
 from funciones import enviar_a_servidor_remoto, mover_a_procesados 
 
 import glob     
 from pathlib import Path
+import configuracion
 
 def obtener_archivos_wav():
     """
@@ -9,6 +12,8 @@ def obtener_archivos_wav():
     Retorna:
         list: Lista de rutas de archivos .wav encontrados
     """
+    # añadir el path de audios a la busqueda
+    os.chdir(configuracion.PATH_AUDIOS)            
     audios = glob.glob("*.wav")
     
     for i, audio in enumerate(audios):

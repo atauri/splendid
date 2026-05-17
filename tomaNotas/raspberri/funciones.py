@@ -2,6 +2,8 @@ import urllib.request
 import urllib.error
 import subprocess
 import time
+import configuracion
+
 
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
@@ -41,21 +43,20 @@ def mover_a_procesados(nombre_archivo: str) -> None:
     Mueve un archivo a la carpeta 'procesados' dentro del directorio actual.
     
     Args:
-        nombre_archivo: Nombre del archivo a mover (ej: "transcripcion.txt")
+        nombre_archivo: Nombre del archivo a mover (ej: "transcripcion.wav")
     """
     import shutil
     import os
 
-    carpeta_procesados = "./procesados"
-    if not os.path.exists(carpeta_procesados):
-        os.makedirs(carpeta_procesados)
+    if not os.path.exists(configuracion.PATH_PROCESADOS):
+        os.makedirs(configuracion.PATH_PROCESADOS)
 
-    ruta_origen = os.path.join(os.getcwd(), nombre_archivo)
-    ruta_destino = os.path.join(os.getcwd(), carpeta_procesados, nombre_archivo)
-    print(f"Moviendo '{nombre_archivo}' a '{carpeta_procesados}/'...")
+    ruta_origen = os.path.join(configuracion.PATH_AUDIOS, nombre_archivo)
+    ruta_destino = os.path.join(os.getcwd(), configuracion.PATH_PROCESADOS, nombre_archivo)
+    print(f"Moviendo '{nombre_archivo}' a '{configuracion.PATH_PROCESADOS}/'...")
     try:
         shutil.move(ruta_origen, ruta_destino)
-        print(f"Archivo '{nombre_archivo}' movido a '{carpeta_procesados}/'")
+        print(f"Archivo '{nombre_archivo}' movido a '{configuracion.PATH_PROCESADOS}/'")
     except Exception as e:
         print(f"Error al mover el archivo: {e}")
 

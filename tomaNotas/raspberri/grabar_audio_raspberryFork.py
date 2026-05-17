@@ -39,7 +39,9 @@ import time
 import collections
 from datetime import datetime
 import threading
-import funciones
+
+import configuracion
+import RPi.GPIO as GPIO
 
 
 try:
@@ -80,7 +82,7 @@ def listar_dispositivos(audio: pyaudio.PyAudio) -> None:
 # Función para guardar SOLO los nuevos chunks en un archivo WAV
 def guardar(frames: list, archivo_wav) -> None:
     
-    #funciones.beep(1, 0.05)
+
     global semaforo_guardar
 
     semaforo_guardar.acquire()  
@@ -104,8 +106,14 @@ def grabar_activado_por_voz(
     global semaforo_guardar
     guardado = False
 
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(23, GPIO.OUT)
+    GPIO.output(23, GPIO.HIGH)
+    
+    
+    # Encender LED al iniciar el script
     # contar numero ficheros wav en el directorio
-    num_wav = len([f for f in os.listdir() if f.endswith(".wav")])
+    num_wav = len([f for f in os.listdir(configuracion.PATH_AUDIOS) if f.endswith(".wav")])
     fichero_salida = f"grabacion_{num_wav + 1}.wav"
 
     # Si pilla fecha y hora sobreescribe el nombre.
@@ -113,10 +121,10 @@ def grabar_activado_por_voz(
     try: fichero_salida = f"{datetime.now().strftime('%Y-%m-%d %H_%M_%S')}.wav"
     except: pass
 
-    # Guardar el WAV en el directorio fijo /home/tadu
+    # Guardar el WAV en el directorio de configuracion
     if not os.path.isabs(fichero_salida):
-        fichero_salida = os.path.join("/home/tadu", fichero_salida)
-    
+        fichero_salida = os.path.join(configuracion.PATH_AUDIOS, fichero_salida)
+
     audio = pyaudio.PyAudio()
     
     # En Raspberry Pi, el dispositivo por defecto puede variar
@@ -141,6 +149,7 @@ def grabar_activado_por_voz(
     archivo_wav = None  # Objeto del archivo WAV abierto
 
     frames_a_guardar = []  # Lista para almacenar los frames que se van a guardar en disco
+    
     # Buffer circular para no perder el inicio del sonido
     max_pre_frames = int(TASA_MUESTREO / CHUNK * PRE_BUFFER_SEC)
     pre_buffer = collections.deque(maxlen=max_pre_frames)
@@ -150,7 +159,8 @@ def grabar_activado_por_voz(
     silencio_inicio = None
     corriendo = True
         
-
+    GPIO.output(23, GPIO.LOW)  # Apagar LED al iniciar la escucha activa
+    
     # Manejo de interrupción en Windows (Ctrl+C)
     def signal_handler(sig, frame):
         print("\n[!] Interrupción detectada. Deteniendo grabación...")
@@ -161,7 +171,7 @@ def grabar_activado_por_voz(
     # ESCUCHAR LA SEÑAL DE INTERRUPCIÓN PARA DETENER LA GRABACIÓN    
     signal.signal(signal.SIGINT, signal_handler)
                         
-    funciones.beep(1,.5)
+
     try:
         os.system("clear")
 
@@ -180,6 +190,7 @@ def grabar_activado_por_voz(
                 if media > umbral:
                     
                     estado = "G"
+                    GPIO.output(23, GPIO.HIGH)  # Encender LED al detectar sonido
                     guardado = False  # Reiniciar bandera de guardado al detectar sonido
                     silencio_inicio = time.time()  # resetear tiempo de silencio al detectar sonido
                     if archivo_wav is None:
@@ -189,6 +200,7 @@ def grabar_activado_por_voz(
                         archivo_wav.setsampwidth(audio.get_sample_size(FORMATO))
                         archivo_wav.setframerate(TASA_MUESTREO)
                 else:
+                    GPIO.output(23, GPIO.LOW)  # Apagar LED al no detectar sonido
                     if estado_anterior =='P': pass
                     else : estado = "S"
                     
@@ -207,20 +219,6 @@ def grabar_activado_por_voz(
                             )
                             hilo_guardar.start()
                             guardado = True
-                        
-                        '''if tiempoEnSilencio > SILENCIO_LIMIT:
-            
-                            os.system("clear")
-                            print("Silencio largo, guardar")
-                            
-                            if not guardado:
-                                hilo_guardar = threading.Thread(
-                                    target=guardar,
-                                    args=(frames_a_guardar, archivo_wav, time.time()),
-                                    daemon=True
-                                )
-                                hilo_guardar.start()
-                            guardado = True'''
                 
                 if estado == 'S' or estado == 'G':
                     pre_buffer.append(data)
@@ -239,6 +237,7 @@ def grabar_activado_por_voz(
         print("\nFIN")
 
     finally:
+        GPIO.output(23, GPIO.HIGH)
         guardar(frames_a_guardar, archivo_wav)  # Guardar cualquier frame restante antes de cerrar
         stream.stop_stream()
         stream.close()
@@ -247,7 +246,7 @@ def grabar_activado_por_voz(
         if archivo_wav:
             archivo_wav.close()
             print(f"Archivo guardado exitosamente: {fichero_salida}")
-            funciones.beep(3, 0.05)
+           
 
 
 def main():
@@ -262,7 +261,7 @@ def main():
         listar_dispositivos(pyaudio.PyAudio())
         return
 
-    funciones.beep(3, 0.05)
+
 
     # Generar nombre por defecto con fecha y hora
     fichero = args.salida or f"{datetime.now().strftime('%H%M%S')}.wav"
