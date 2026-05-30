@@ -1,0 +1,51 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+header {
+    margin-top: 0px;
+    color: rgb(56, 58, 59);
+    background: #77b3d4;
+    /*poner de fondo un icono de chat ancho 100%*/
+    background-image: url('chat-icon.png');
+    background-repeat: no-repeat;
+    background-position: 10px 10px;
+    background-size: 500px;
+    height: 400px;
+}
+
+nav button {
+    margin-right: 10px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+main {
+    padding: 0px;
+    margin: 0px;
+}
+
+#titulo {
+    margin-top: 0px;
+    color: black;
+    font-size: 80px;
+    font-weight: bolder;
+    padding: 20px;
+    font-family: 'Viga', sans-serif;
+    /*arrojar sombra*/
+    text-shadow: 4px 4px 3px #6898b4;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.botonera {
+    margin: 20px;
+}
