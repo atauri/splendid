@@ -17,6 +17,21 @@ header {
     height: 400px;
 }
 
+/*poner css de  #transcripcion a pantalla completa sobre el fondo */
+#transcripcion {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 500px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
 nav button {
     margin-right: 10px;
     padding: 10px;
@@ -48,4 +63,33 @@ main {
 
 .botonera {
     margin: 20px;
+}
+
+.fa-trash {
+    padding-left: 20px;
+    color: rgb(216, 216, 216);
+    cursor: pointer;
+}
+
+.fa-music,
+.fa-pencil {
+    padding-right: 20px;
+    color: gray;
+    font-size: 1.5em;
+}
+
+.fa-trash:hover {
+    font-size: 1.2em;
+    color: red;
+    cursor: pointer;
+}
+
+.btn-close {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
 }

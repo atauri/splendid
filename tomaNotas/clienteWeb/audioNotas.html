@@ -14,6 +14,8 @@
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
         rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="preconnect"
         href="https://fonts.googleapis.com">
     <link rel="preconnect"
@@ -44,7 +46,7 @@
         </header>
 
         <main>
-            <!-- audio .wav -->
+            <!-- audio .wav -------------------------------------------------------------------------------------------->
             <section
                 class="card">
                 <h2>Audios
@@ -57,118 +59,164 @@
                         :key="id"
                         @click="seleccionarAudio(audio)"
                         style="cursor: pointer;">
-                        <small><b>{{renombrarFichero(audio)}}</b></small>
 
+                        <small>
 
+                            <i class="fa fa-music"
+                                aria-hidden="true"></i>
+
+                            <b>{{renombrarFichero(audio)}}</b>
+
+                            <i class="fa fa-trash"
+                                aria-hidden="true">
+                            </i></small>
                     </li>
                 </ul>
             </section>
             <br>
 
-            <!-- transcripciones -->
+            <!--lista de transcripciones --------------------------------------------------------------->
             <section
-                v-if="audioSeleccionado!=''"
                 class="card">
-                <h2>Transcripcion:
+                <h2>Transcripciones
                 </h2>
-                <p>
-                    <b>{{fechaLegible}}</b>
-                    (
-                    <small>{{audioSeleccionado}}</small>
-                    )
-                </p>
+                <!-- para cada transcripcion -->
+                <!-- para cada audio -->
+                <ul
+                    class="list-group">
+                    <li class="list-group-item list-group-item-action"
+                        v-for="transcripcion, id in transcripciones"
+                        :key="id"
+                        @click="seleccionarTranscripcion(transcripcion)"
+                        style="cursor: pointer;">
 
-                <div class="btn-group mb-3"
-                    role="group"
-                    aria-label="Controles de audio">
+                        <small>
+                            <i class="fa fa-pencil"
+                                aria-hidden="true">
+                            </i>
+
+                            <b>{{renombrarFichero(transcripcion)}}</b>
+                            <i class="fa fa-trash"
+                                aria-hidden="true">
+                            </i></small>
+                    </li>
+                </ul>
+
+                <!-- EDICION TRANSCRIPCION-->
+                <section
+                    id="transcripcion"
+                    v-if="transcripcionSeleccionada!=''"
+                    class="card">
+
+                    <!--icono de fontawesome para cerrar-->
                     <button
                         type="button"
-                        class="btn btn-success"
-                        @click="reproducirAudio(audioSeleccionado + '.wav')">
-                        {{accionReproductor}}
+                        class="btn-close"
+                        aria-label="Close"
+                        @click="transcripcionSeleccionada = ''; audioSeleccionado = ''; fechaLegible = ''">
                     </button>
 
-                </div>
+                    <h2>Transcripcion:
+                    </h2>
+                    <p>
+                        <b>{{fechaLegible}}</b>
+                        (
+                        <small>{{audioSeleccionado}}</small>
+                        )
+                    </p>
 
-                <!-- campo de texto editable de 20 lineas con la transcripcion del audio seleccionado -->
-                <textarea
-                    class="form-control"
-                    v-model="transcripcion"
-                    rows="20"></textarea>
+                    <div class="btn-group mb-3"
+                        role="group"
+                        aria-label="Controles de audio">
+                        <button
+                            type="button"
+                            class="btn btn-success"
+                            @click="reproducirAudio(audioSeleccionado + '.wav')">
+                            {{accionReproductor}}
+                        </button>
 
-                <div
-                    class="botonera">
-                    <button
-                        class="btn btn-primary me-2"
-                        @click="guardarTranscripcion ">Guardar
-                        Transcripción</button>
-                    <button
-                        class="btn btn-primary me-2"
-                        @click="generarFicha ">Generar
-                        Ficha</button>
-
-                </div>
-
-            </section>
-
-            <br>
-
-            <!-- Ficha -->
-            <section
-                class="card"
-                v-if="ficha!==null">
-                <h2>Ficha</h2>
-                <textarea
-                    class="form-control"
-                    v-model="ficha"
-                    rows="20"></textarea>
-
-                <form
-                    class="mt-4">
-                    <div
-                        class="row g-3 align-items-end">
-                        <div
-                            class="col-md-3">
-                            <label
-                                class="form-label">Timestamp</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                v-model="timestamp"
-                                placeholder="00:00:00" />
-                        </div>
-                        <div
-                            class="col-md-3">
-                            <label
-                                class="form-label">Localidad</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                v-model="localidad"
-                                placeholder="Localidad" />
-                        </div>
-                        <div
-                            class="col-md-3">
-                            <label
-                                class="form-label">Colmena</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                v-model="colmena"
-                                placeholder="Colmena" />
-                        </div>
-                        <div
-                            class="col-md-2">
-                            <button
-                                type="button"
-                                class="btn btn-primary w-100"
-                                @click="insertarFicha">
-                                Insertar
-                            </button>
-                        </div>
                     </div>
-                </form>
-            </section>
+
+                    <!-- campo de texto editable de 20 lineas con la transcripcion del audio seleccionado -->
+                    <textarea
+                        class="form-control"
+                        v-model="transcripcion"
+                        rows="20"></textarea>
+
+                    <div
+                        class="botonera">
+                        <button
+                            class="btn btn-primary me-2"
+                            @click="guardarTranscripcion ">Guardar
+                            Transcripción</button>
+                        <button
+                            class="btn btn-primary me-2"
+                            @click="generarFicha ">Generar
+                            Ficha</button>
+
+                    </div>
+
+                </section>
+
+                <br>
+
+                <!-- Ficha ----------------------------------------------------------->
+                <section
+                    class="card"
+                    v-if="ficha!==null">
+                    <h2>Ficha
+                    </h2>
+                    <textarea
+                        class="form-control"
+                        v-model="ficha"
+                        rows="20"></textarea>
+
+                    <form
+                        class="mt-4">
+                        <div
+                            class="row g-3 align-items-end">
+                            <div
+                                class="col-md-3">
+                                <label
+                                    class="form-label">Timestamp</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="timestamp"
+                                    placeholder="00:00:00" />
+                            </div>
+                            <div
+                                class="col-md-3">
+                                <label
+                                    class="form-label">Localidad</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="localidad"
+                                    placeholder="Localidad" />
+                            </div>
+                            <div
+                                class="col-md-3">
+                                <label
+                                    class="form-label">Colmena</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="colmena"
+                                    placeholder="Colmena" />
+                            </div>
+                            <div
+                                class="col-md-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary w-100"
+                                    @click="insertarFicha">
+                                    Insertar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
 
         </main>
 
@@ -177,12 +225,14 @@
     <script>
         const {createApp} = Vue;
 
-        createApp({
+        const app = createApp({
             data() {
                 return {
                     titulo: 'Notas de Audio',
                     audios: ["sdasd.wav", "asdasd.wav", "asdasd.wav"],
                     audioSeleccionado: "",
+                    transcripciones: ["sdasd.txt", "asdasd.txt", "asdasd.txt"],
+                    transcripcionSeleccionada: "",
                     fechaLegible: "",
                     transcripcion: null,
                     ficha: null,
@@ -238,13 +288,19 @@
                     }
 
                 },
-
+                seleccionarTranscripcion(nombre) {
+                    nombre = nombre.replace('.txt', '');
+                    alert(nombre);
+                    this.transcripcionSeleccionada = nombre;;
+                    this.cargarTranscripcion(nombre);
+                },
                 seleccionarAudio(audio) {
                     // quitar la extensión .wav
                     audio = audio.replace('.wav', '');
+                    this.transcripcionSeleccionada = audio + '.txt';
 
                     //pasar el nombre del fichero que es una fecha en formato [YYYY-MM-DD HH_MM] a
-                    //   fomato dia y mes en formato texto
+                    //  fomato dia y mes en formato texto
                     this.fechaLegible = this.renombrarFichero(audio);
 
                     this.accionReproductor = "Play";
@@ -253,51 +309,62 @@
                     }
                     this.reproductor = null;
 
-
                     this.audioSeleccionado = audio;
-                    var url = 'https://atauri.es/notas/revisiones/transcribe/' + audio;
+                    this.cargarTranscripcion(audio);
 
-                    this.transcripcion = "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-
-                    /*
+                },
+                cargarTranscripcion(nombre) {
+                    var url = 'https://atauri.es/notas/revisiones/txt/' + nombre;
+                    //cargar la transcripcion si la hay desde el servidor con axios usando GET
+                    //  a la url https://atauri.es/notas/revisiones/txt/<nombre_audio> y mostrarla en el textarea                    /*
                     try {
                         const vm = this
                         axios.get(url)
-                        .then(function (data){
-                            vm.transcripcion = data.data               })
-        
-                        const datos = response.data;
-        
-                        this.audios = datos.map((nombre, index) => {
-                            return {
-                                id: index,
-                                nombre: nombre,
-                                url: nombre
-                            };
-                        });
-        
+                            .then(function (data) {
+                                vm.transcripcion = data.data
+                            })
                     }
                     catch (error) {
-        
-                        console.error('Error cargando audios:', error);
-        
+                        vm.transcripcion = "Ficho no hencontrado"
                     }
-                    */
-
                 },
-
                 guardarTranscripcion() {
-                    // Lógica para guardar la transcripción
-                    //enviar la transcripcion al servidor con axios usando POST a la url
-                    // https://atauri.es/notas/revisiones/txt2file/<nombre_audio> con el nombre del audio
-                    var url = 'https://atauri.es/notas/revisiones/txt2file/' + this.audioSeleccionado;
-                    axios.post(url, {
-                        transcripcion: this.transcripcion
+                    // Enviar la transcripción como texto plano para evitar preflight CORS
+                    var nombre = encodeURIComponent(this.audioSeleccionado);
+                    var url = 'https://atauri.es/notas/revisiones/txt2file/' + nombre;
+
+                    axios.post(url, this.transcripcion || '', {
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        }
                     })
+                        .then((response) => {
+                            console.log('Transcripción guardada:', response);
+                            alert('Transcripción guardada correctamente.');
+                        })
+                        .catch((error) => {
+                            console.error('Error guardando transcripción:', error);
+                            alert('Error guardando transcripción. Revisa la consola para más detalles.');
+                        });
 
                 },
                 generarFicha() {
-                    this.ficha = "Ficha generada para " + this.audioSeleccionado;
+
+                    var url = 'https://atauri.es/notas/revisiones/genera';
+
+                    axios.post(url, this.transcripcion || '', {
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        }
+                    })
+                        .then((response) => {
+                            console.log('Ficha generada:', response);
+                            this.ficha = response.data;
+                        })
+                        .catch((error) => {
+                            console.error('Error generando ficha:', error);
+                            alert('Error generando ficha. Revisa la consola para más detalles.');
+                        });
                 },
                 insertarFicha() {
                     this.ficha += `\n\nTimestamp: ${this.timestamp}`;
@@ -312,13 +379,22 @@
                     const response = await fetch(
                         'https://atauri.es/notas/revisiones/lista/wav'
                     );
-
                     const datos = await response.json();
                     this.audios = datos.archivos
                 }
                 catch (error) {
-
                     console.error('Error cargando audios:', error);
+                }
+                //descargar lista de transcripciones desde el servidor
+                try {
+                    const response = await fetch(
+                        'https://atauri.es/notas/revisiones/lista/txt'
+                    );
+                    const datos = await response.json();
+                    this.transcripciones = datos.archivos
+                }
+                catch (error) {
+                    console.error('Error cargando transcripciones:', error);
                 }
             }
         }).mount('#app');
